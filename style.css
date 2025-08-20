@@ -1,12 +1,29 @@
 :root {
   --page-max: 1100px;
-  --gap: 16px;
-  --card-radius: 12px;
+
+  /* 四格 slot 位置／大小（百分比） */
+  --s1-top: 8%;
+  --s1-left: 7%;
+  --s1-w: 60%;
+  --s1-h: 38%;
+  --s2-top: 8%;
+  --s2-left: 55%;
+  --s2-w: 30%;
+  --s2-h: 38%;
+  --s3-top: 54%;
+  --s3-left: 7%;
+  --s3-w: 60%;
+  --s3-h: 38%;
+  --s4-top: 54%;
+  --s4-left: 55%;
+  --s4-w: 30%;
+  --s4-h: 38%;
 }
 
 * {
   box-sizing: border-box;
 }
+
 body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans TC",
@@ -21,7 +38,6 @@ body {
 }
 
 .album {
-  position: relative;
   width: min(100%, var(--page-max));
 }
 
@@ -30,19 +46,18 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
   padding: 8px 4px;
+  gap: 12px;
 }
 
 .album__controls {
   display: flex;
-  align-items: center;
   gap: 8px;
 }
 .album__controls button {
   padding: 8px 12px;
   border: 1px solid #ccc;
-  background: white;
+  background: #fff;
   border-radius: 8px;
   cursor: pointer;
 }
@@ -51,75 +66,87 @@ body {
   cursor: not-allowed;
 }
 
-.album__book-bg {
-  /* 替換成你的卡冊內頁背景圖 */
-  background-image: url("https://nancy-0724.github.io/img/4X4.png");
-  position: relative; /* 改成相對定位容器 */
+.album__book {
   width: 100%;
-  max-width: 1100px;   /* 可依需求設定寬度 */
+}
+
+/* 單頁背景 */
+.album__book-bg {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
-  background-size: contain;   /* 保持比例縮放 */
-  aspect-ratio: 4 / 3;  
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  aspect-ratio: 4 / 3; /* JS 會用真實比例覆蓋 */
 }
 
-.album__grid {
+/* 四格 slot */
+.slot1 {
+  top: var(--s1-top);
+  left: var(--s1-left);
+  width: var(--s1-w);
+  height: var(--s1-h);
+}
+.slot2 {
+  top: var(--s2-top);
+  left: var(--s2-left);
+  width: var(--s2-w);
+  height: var(--s2-h);
+}
+.slot3 {
+  top: var(--s3-top);
+  left: var(--s3-left);
+  width: var(--s3-w);
+  height: var(--s3-h);
+}
+.slot4 {
+  top: var(--s4-top);
+  left: var(--s4-left);
+  width: var(--s4-w);
+  height: var(--s4-h);
+}
+
+/* slot = 卡片容器範圍（對齊格線），卡片放在裡面置中 */
+.slot {
   position: absolute;
-  inset: 0;   /* 蓋在背景上 */
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  padding: 5%;     /* 視需要微調讓卡片剛好對齊格子 */
-  gap: 2%;         /* 格子間隔 */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* 卡片本體：固定直式 2:3 比例 */
 .card {
-  background: transparent; /* 移掉底色，讓背景透出 */
-  border: none;
-  box-shadow: none;
+  aspect-ratio: 2 / 3; /* 關鍵！強制直式比例 */
+  height: 100%; /* 讓它在 slot 的高度範圍內放大到頂 */
+  max-width: 100%; /* 防止超出 slot 寬度 */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .card__img {
-  position: relative;
-  aspect-ratio: 4 / 3;
-  overflow: hidden;
-  background: #fafafa;
-}
-.card__img img {
   width: 100%;
-  height: auto;
-  border-radius: 8px;  /* 模擬卡片圓角 */
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* 增加立體感，像放進卡冊裡 */
-}
-}
-.card__meta {
-  padding: 10px 12px;
-  border-top: 1px solid #eee;
-}
-.card__title {
-  margin: 0;
-  font-weight: 600;
-  line-height: 1.3;
-  font-size: 16px;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+  height: 100%;
+  background: #fafafa;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   overflow: hidden;
 }
 
-@media (max-width: 720px) {
-  .album__grid {
-    grid-template-columns: 1fr 1fr;
-    padding: 16px;
-    gap: 12px;
-  }
-  .album__book-bg {
-    inset: 70px 0 70px 0;
-  }
+.card__img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* 保留 2:3 原圖完整顯示，不裁切 */
 }
-@media (max-width: 420px) {
-  .album__grid {
-    grid-template-columns: 1fr;
-  }
+
+/* 校正模式 */
+.album__book-bg.debug .slot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px dashed #e53935;
+  border-radius: 8px;
+  pointer-events: none;
 }
