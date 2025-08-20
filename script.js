@@ -44,26 +44,31 @@ function parseCSV(text) {
   }
   return data;
 }
-function toDirectDriveUrl(url) {
-  if (!url) return "";
-  url = url.trim().replace(/^"|"$/g, ""); // 去掉 CSV 可能的雙引號
+function driveImageUrls(rawUrl) {
+  rawUrl = rawUrl.trim().replace(/^"|"$/g, "");
   try {
-    const u = new URL(url);
+    const u = new URL(rawUrl);
+    const id = u.searchParams.get("id") 
+             || (rawUrl.match(/\/file\/d\/([^/]+)/) || [])[1];
+    if (!id) return { primary: rawUrl };
 
-    // case 1: ?id=xxxx  (open?id=xxx, thumbnail?id=xxx 都適用)
-    const id = u.searchParams.get("id");
-    if (id) return `https://drive.google.com/uc?export=view&id=${id}`;
-
-    // case 2: /file/d/xxxx/
-    const m = url.match(/\/file\/d\/([^/]+)/);
-    if (m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
-
-    // 其他格式就原樣
-    return url;
+    return {
+      primary: `https://drive.google.com/thumbnail?id=${id}`, // 優先用縮圖
+      fallback: `https://drive.google.com/uc?export=view&id=${id}` // 備用
+    };
   } catch {
-    return url;
+    return { primary: rawUrl };
   }
 }
+
+function cardHtml(item) {
+  const { primary, fallback } = driveImageUrls(item.image);
+  return `<div class="card"><div class="card__img">
+    <img src="${primary}" alt="${item.name}"
+         onerror="if('${fallback}') this.src='${fallback}'">
+  </div></div>`;
+}
+
 
 
 // ====== 渲染單頁（4張 slot） ======
