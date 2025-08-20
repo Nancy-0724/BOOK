@@ -136,9 +136,9 @@ body {
 }
 
 .card__img img {
-  width: 100%;
+  width: auto;
   height: 100%;
-  object-fit: contain; /* 保留 2:3 原圖完整顯示，不裁切 */
+  object-fit: cover; /* 保留 2:3 原圖完整顯示，不裁切 */
 }
 
 /* 校正模式 */
