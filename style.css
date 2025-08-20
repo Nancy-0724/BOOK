@@ -127,6 +127,7 @@ body {
 }
 
 .card__img {
+  aspect-ratio: 2 / 3; /* 強制直式比例 */
   width: auto;
   height: 100%;
   background: #fafafa;
@@ -136,6 +137,7 @@ body {
 }
 
 .card__img img {
+  aspect-ratio: 2 / 3; /* 關鍵！強制直式比例 */
   width: auto;
   height: 100%;
   object-fit: cover; /* 保留 2:3 原圖完整顯示，不裁切 */
