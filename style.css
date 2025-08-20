@@ -120,14 +120,14 @@ body {
 .card {
   aspect-ratio: 2 / 3; /* 關鍵！強制直式比例 */
   height: 100%; /* 讓它在 slot 的高度範圍內放大到頂 */
-  max-width: 100%; /* 防止超出 slot 寬度 */
+   /*max-width: 100%; 防止超出 slot 寬度 */
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .card__img {
-  width: 100%;
+  width: auto;
   height: 100%;
   background: #fafafa;
   border-radius: 8px;
