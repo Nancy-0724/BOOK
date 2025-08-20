@@ -46,17 +46,25 @@ function parseCSV(text) {
 }
 function toDirectDriveUrl(url) {
   if (!url) return "";
+  url = url.trim().replace(/^"|"$/g, ""); // 去掉 CSV 可能的雙引號
   try {
     const u = new URL(url);
+
+    // case 1: ?id=xxxx  (open?id=xxx, thumbnail?id=xxx 都適用)
     const id = u.searchParams.get("id");
     if (id) return `https://drive.google.com/uc?export=view&id=${id}`;
+
+    // case 2: /file/d/xxxx/
     const m = url.match(/\/file\/d\/([^/]+)/);
     if (m) return `https://drive.google.com/uc?export=view&id=${m[1]}`;
+
+    // 其他格式就原樣
     return url;
   } catch {
     return url;
   }
 }
+
 
 // ====== 渲染單頁（4張 slot） ======
 function cardHtml(item) {
