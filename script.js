@@ -30,6 +30,7 @@ async function fetchCSV() {
   const text = await res.text();
   return parseCSV(text);
 }
+
 function parseCSV(text) {
   const rows = text
     .trim()
@@ -44,40 +45,46 @@ function parseCSV(text) {
   }
   return data;
 }
+
+// ====== URL 轉換 ======
+function toDirectDriveUrl(url) {
+  if (!url) return "";
+  url = url.trim().replace(/^"|"$/g, "");
+  try {
+    const u = new URL(url);
+    const id = u.searchParams.get("id") || (url.match(/\/file\/d\/([^/]+)/) || [])[1];
+    if (!id) return url;
+    return `https://drive.google.com/thumbnail?id=${id}`;
+  } catch {
+    return url;
+  }
+}
+
 function driveImageUrls(rawUrl) {
   rawUrl = rawUrl.trim().replace(/^"|"$/g, "");
   try {
     const u = new URL(rawUrl);
-    const id = u.searchParams.get("id") 
-             || (rawUrl.match(/\/file\/d\/([^/]+)/) || [])[1];
+    const id = u.searchParams.get("id") || (rawUrl.match(/\/file\/d\/([^/]+)/) || [])[1];
     if (!id) return { primary: rawUrl };
-
     return {
-      primary: `https://drive.google.com/thumbnail?id=${id}`, // 優先用縮圖
-      fallback: `https://drive.google.com/uc?export=view&id=${id}` // 備用
+      primary: `https://drive.google.com/thumbnail?id=${id}`,
+      fallback: `https://drive.google.com/uc?export=view&id=${id}`
     };
   } catch {
     return { primary: rawUrl };
   }
 }
 
+// ====== 卡片 HTML ======
 function cardHtml(item) {
-  const { primary, fallback } = driveImageUrls(item.image);
+  const { primary, fallback } = driveImageUrls(item.image || "");
   return `<div class="card"><div class="card__img">
     <img src="${primary}" alt="${item.name}"
-         onerror="if('${fallback}') this.src='${fallback}'">
+         onerror="this.onerror=null;this.src='${fallback || CONFIG.FALLBACK_IMG}'">
   </div></div>`;
 }
-
-
 
 // ====== 渲染單頁（4張 slot） ======
-function cardHtml(item) {
-  return `<div class="card"><div class="card__img">
-    <img src="${item.image}" alt="${item.name}"
-         onerror="this.src='${CONFIG.FALLBACK_IMG}'">
-  </div></div>`;
-}
 function render() {
   const totalPages = Math.max(1, Math.ceil(items.length / 4));
   page = Math.min(Math.max(1, page), totalPages);
@@ -123,7 +130,7 @@ function setupDebugToggle() {
       .querySelectorAll(".album__book-bg")
       .forEach((el) => el.classList.toggle("debug"));
   };
-  btn.addEventListener("click", toggle);
+  if (btn) btn.addEventListener("click", toggle);
   document.addEventListener("keydown", (e) => {
     if (e.key.toLowerCase() === "d") toggle();
   });
