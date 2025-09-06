@@ -52,7 +52,8 @@ function toDirectDriveUrl(url) {
   url = url.trim().replace(/^"|"$/g, "");
   try {
     const u = new URL(url);
-    const id = u.searchParams.get("id") || (url.match(/\/file\/d\/([^/]+)/) || [])[1];
+    const id =
+      u.searchParams.get("id") || (url.match(/\/file\/d\/([^/]+)/) || [])[1];
     if (!id) return url;
     return `https://drive.google.com/thumbnail?id=${id}`;
   } catch {
@@ -64,7 +65,8 @@ function driveImageUrls(rawUrl) {
   rawUrl = rawUrl.trim().replace(/^"|"$/g, "");
   try {
     const u = new URL(rawUrl);
-    const id = u.searchParams.get("id") || (rawUrl.match(/\/file\/d\/([^/]+)/) || [])[1];
+    const id =
+      u.searchParams.get("id") || (rawUrl.match(/\/file\/d\/([^/]+)/) || [])[1];
     if (!id) return { primary: rawUrl };
     return {
       primary: `https://drive.google.com/thumbnail?id=${id}`,
@@ -75,51 +77,130 @@ function driveImageUrls(rawUrl) {
   }
 }
 
-// ====== 卡片 HTML ======
+// ====== 卡片 HTML（含名稱標籤） ======
 function cardHtml(item) {
   const { primary, fallback } = driveImageUrls(item.image || "");
-  return `<div class="card"><div class="card__img">
-    <img src="${primary}" alt="${item.name}"
-         onerror="this.onerror=null;this.src='${fallback || CONFIG.FALLBACK_IMG}'">
-  </div></div>`;
+  const label = item.name
+    ? `<div class="card__label" title="${item.name}">${item.name}</div>`
+    : "";
+  return `<div class="card">
+            ${label}
+            <div class="card__img">
+              <img src="${primary}" alt="${item.name}"
+                   onerror="this.onerror=null;this.src='${
+                     fallback || CONFIG.FALLBACK_IMG
+                   }'">
+            </div>
+          </div>`;
 }
 
-// ====== 渲染單頁（4張 slot） ======
-function render() {
-  const totalPages = Math.max(1, Math.ceil(items.length / 4));
-  page = Math.min(Math.max(1, page), totalPages);
-  const start = (page - 1) * 4;
-  const slice = items.slice(start, start + 4);
+// ====== 計算總面數：第1面=4張，其後每面=8張 ======
+function totalPagesFor(count) {
+  if (count <= 4) return 1;
+  return 1 + Math.ceil((count - 4) / 8);
+}
 
-  bookEl.innerHTML = `
-    <div class="album__book-bg">
-      <div class="slot slot1">${slice[0] ? cardHtml(slice[0]) : ""}</div>
-      <div class="slot slot2">${slice[1] ? cardHtml(slice[1]) : ""}</div>
-      <div class="slot slot3">${slice[2] ? cardHtml(slice[2]) : ""}</div>
-      <div class="slot slot4">${slice[3] ? cardHtml(slice[3]) : ""}</div>
-    </div>
-  `;
+// ====== 讀取背景設定 ======
+function getBackgrounds() {
+  // 支援舊屬性 data-bg（若只給一張）
+  const single = bookEl.dataset.bgSingle || bookEl.dataset.bg || "";
+  const left = bookEl.dataset.bgLeft || single;
+  const right = bookEl.dataset.bgRight || single;
+  return { single, left, right };
+}
+
+// ====== 渲染 ======
+function render() {
+  const totalPages = totalPagesFor(items.length);
+  page = Math.min(Math.max(1, page), totalPages);
+  const { single, left, right } = getBackgrounds();
+
+  if (page === 1) {
+    // 第1面：只顯示4張
+    const slice = items.slice(0, 4);
+    bookEl.innerHTML = `
+      <div class="album__book-bg" data-side="single">
+        <div class="slot slot1">${slice[0] ? cardHtml(slice[0]) : ""}</div>
+        <div class="slot slot2">${slice[1] ? cardHtml(slice[1]) : ""}</div>
+        <div class="slot slot3">${slice[2] ? cardHtml(slice[2]) : ""}</div>
+        <div class="slot slot4">${slice[3] ? cardHtml(slice[3]) : ""}</div>
+      </div>
+    `;
+  } else {
+    // 之後每一面：顯示8張（左右各4張）
+    const start = 4 + (page - 2) * 8;
+    const slice = items.slice(start, start + 8);
+    const leftCards = slice.slice(0, 4);
+    const rightCards = slice.slice(4, 8);
+
+    bookEl.innerHTML = `
+      <div class="album__spread">
+        <div class="album__book-bg" data-side="left">
+          <div class="slot slot1">${
+            leftCards[0] ? cardHtml(leftCards[0]) : ""
+          }</div>
+          <div class="slot slot2">${
+            leftCards[1] ? cardHtml(leftCards[1]) : ""
+          }</div>
+          <div class="slot slot3">${
+            leftCards[2] ? cardHtml(leftCards[2]) : ""
+          }</div>
+          <div class="slot slot4">${
+            leftCards[3] ? cardHtml(leftCards[3]) : ""
+          }</div>
+        </div>
+        <div class="album__book-bg" data-side="right">
+          <div class="slot slot1">${
+            rightCards[0] ? cardHtml(rightCards[0]) : ""
+          }</div>
+          <div class="slot slot2">${
+            rightCards[1] ? cardHtml(rightCards[1]) : ""
+          }</div>
+          <div class="slot slot3">${
+            rightCards[2] ? cardHtml(rightCards[2]) : ""
+          }</div>
+          <div class="slot slot4">${
+            rightCards[3] ? cardHtml(rightCards[3]) : ""
+          }</div>
+        </div>
+      </div>
+    `;
+  }
 
   prevBtn.disabled = page <= 1;
   nextBtn.disabled = page >= totalPages;
-  pageInfo.textContent = `Page ${page} / ${totalPages}`;
+  pageInfo.textContent = `PAGE ${page} / ${totalPages}`;
 
   ensureAspectRatio();
+  applyBackgrounds();
 }
 
-// ====== 自動套背景比例 ======
+// ====== 自動套背景比例（以 single 或 left 的比例為準） ======
 function ensureAspectRatio() {
-  const bg = bookEl.dataset.bg;
-  if (!bg) return;
+  const { single, left } = getBackgrounds();
+  const probe = single || left;
+  if (!probe) return;
   const img = new Image();
   img.onload = () => {
     const ratio = `${img.naturalWidth} / ${img.naturalHeight}`;
     document.querySelectorAll(".album__book-bg").forEach((el) => {
       el.style.aspectRatio = ratio;
-      el.style.backgroundImage = `url("${bg}")`;
     });
   };
-  img.src = bg;
+  img.src = probe;
+}
+
+// ====== 套用左右背景 ======
+function applyBackgrounds() {
+  const { single, left, right } = getBackgrounds();
+  document.querySelectorAll(".album__book-bg").forEach((el) => {
+    const side = el.getAttribute("data-side");
+    if (side === "left")
+      el.style.backgroundImage = left ? `url("${left}")` : "";
+    else if (side === "right")
+      el.style.backgroundImage = right ? `url("${right}")` : "";
+    else el.style.backgroundImage = single ? `url("${single}")` : "";
+  });
 }
 
 // ====== 校正模式切換 ======

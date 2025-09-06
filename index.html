@@ -1,4 +1,14 @@
 <!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Untitled</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
 <html lang="zh-Hant">
 
 <head>
@@ -11,24 +21,33 @@
 <body>
   <div class="album">
     <div class="album__header">
-      <h1>線上卡冊</h1>
-      <div class="album__controls">
-        <button id="prevBtn" aria-label="上一面">‹</button>
-        <span id="pageInfo">面 1 / 1</span>
-        <button id="nextBtn" aria-label="下一面">›</button>
-        <button id="reloadBtn">重新整理</button>
-      </div>
+      <h1>🉐卡冊</h1>
+
     </div>
 
     <div class="album__book">
       <!-- JS 會動態插入頁面 -->
-      <div id="book" data-bg="https://nancy-0724.github.io/img/4X4.png"></div>
+      <div id="book" data-bg-single="https://nancy-0724.github.io/img/4X4L.png" data-bg-left="https://nancy-0724.github.io/img/4X4R.png" data-bg-right="https://nancy-0724.github.io/img/4X4L.png">
+      </div>
+
     </div>
 
-    <div class="album__footer"></div>
+    <div class="album__footer">
+            <div class="album__controls">
+        <button id="prevBtn" aria-label="上一面">‹</button>
+        <span id="pageInfo">PAGE 1 / 1</span>
+        <button id="nextBtn" aria-label="下一面">›</button>
+        <button id="reloadBtn">🔄️</button>
+      </div>
+    </div>
   </div>
 
   <script src="./script.js"></script>
 </body>
 
+</html>
+<!-- partial -->
+  <script  src="./script.js"></script>
+
+</body>
 </html>

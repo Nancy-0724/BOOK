@@ -1,23 +1,61 @@
 :root {
   --page-max: 1100px;
 
-  /* 四格 slot 位置／大小（百分比） */
-  --s1-top: 8%;
-  --s1-left: 7%;
-  --s1-w: 60%;
-  --s1-h: 38%;
-  --s2-top: 8%;
-  --s2-left: 55%;
-  --s2-w: 30%;
-  --s2-h: 38%;
-  --s3-top: 54%;
-  --s3-left: 7%;
-  --s3-w: 60%;
-  --s3-h: 38%;
-  --s4-top: 54%;
-  --s4-left: 55%;
-  --s4-w: 30%;
-  --s4-h: 38%;
+  /* ====== 單頁（第1面）四格 slot 位置／大小（百分比） ====== */
+  --S-s1-top: 8%;
+  --S-s1-left: 7%;
+  --S-s1-w: 50%;
+  --S-s1-h: 38%;
+  --S-s2-top: 8%;
+  --S-s2-left: 55%;
+  --S-s2-w: 45%;
+  --S-s2-h: 38%;
+  --S-s3-top: 54%;
+  --S-s3-left: 7%;
+  --S-s3-w: 50%;
+  --S-s3-h: 38%;
+  --S-s4-top: 54%;
+  --S-s4-left: 55%;
+  --S-s4-w: 45%;
+  --S-s4-h: 38%;
+
+  /* ====== 左頁（第2面起，左側）四格 ====== */
+  /* 👉 左頁請自行調整，與右頁不再共用 */
+  --L-s1-top: 8%;
+  --L-s1-left: 7%;
+  --L-s1-w: 33%;
+  --L-s1-h: 38%;
+  --L-s2-top: 8%;
+  --L-s2-left: 52%;
+  --L-s2-w: 32%;
+  --L-s2-h: 38%;
+  --L-s3-top: 54%;
+  --L-s3-left: 7%;
+  --L-s3-w: 33%;
+  --L-s3-h: 38%;
+  --L-s4-top: 54%;
+  --L-s4-left: 52%;
+  --L-s4-w: 32%;
+  --L-s4-h: 38%;
+
+  /* ====== 右頁（第2面起，右側）四格 ====== */
+  /* 👉 右頁獨立，可跟左頁不同 */
+  --R-s1-top: 10%;
+  --R-s1-left: 10%;
+  --R-s1-w: 45%;
+  --R-s1-h: 36%;
+  --R-s2-top: 10%;
+  --R-s2-left: 58%;
+  --R-s2-w: 40%;
+  --R-s2-h: 36%;
+  --R-s3-top: 56%;
+  --R-s3-left: 10%;
+  --R-s3-w: 45%;
+  --R-s3-h: 36%;
+  --R-s4-top: 56%;
+  --R-s4-left: 58%;
+  --R-s4-w: 40%;
+  --R-s4-h: 36%;
 }
 
 * {
@@ -44,16 +82,16 @@ body {
 .album__header,
 .album__footer {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 4px;
-  gap: 12px;
+  justify-content: center; /* 置中 */
+  margin-top: 16px;
 }
 
 .album__controls {
   display: flex;
-  gap: 8px;
+  gap: 12px;
+  align-items: center;
 }
+
 .album__controls button {
   padding: 8px 12px;
   border: 1px solid #ccc;
@@ -70,9 +108,23 @@ body {
   width: 100%;
 }
 
-/* 單頁背景 */
+.album__book-bg[data-side="single"] {
+  flex: 1 1 0;
+  max-width: 50%; /* 每頁佔一半寬度 */
+}
+
+/* 兩頁展開（從第2面開始使用） */
+.album__spread {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+/* 單/左右頁背景容器 */
 .album__book-bg {
   position: relative;
+  flex: 1 1 0;
   width: 100%;
   max-width: 1100px;
   margin: 0 auto;
@@ -82,30 +134,12 @@ body {
   aspect-ratio: 4 / 3; /* JS 會用真實比例覆蓋 */
 }
 
-/* 四格 slot */
-.slot1 {
-  top: var(--s1-top);
-  left: var(--s1-left);
-  width: var(--s1-w);
-  height: var(--s1-h);
+/* ✅ 新增：左右頁背景對齊設定 */
+.album__book-bg[data-side="left"] {
+  background-position: right center; /* 靠右，方便跟右頁拼接 */
 }
-.slot2 {
-  top: var(--s2-top);
-  left: var(--s2-left);
-  width: var(--s2-w);
-  height: var(--s2-h);
-}
-.slot3 {
-  top: var(--s3-top);
-  left: var(--s3-left);
-  width: var(--s3-w);
-  height: var(--s3-h);
-}
-.slot4 {
-  top: var(--s4-top);
-  left: var(--s4-left);
-  width: var(--s4-w);
-  height: var(--s4-h);
+.album__book-bg[data-side="right"] {
+  background-position: left center; /* 靠左，方便跟左頁拼接 */
 }
 
 /* slot = 卡片容器範圍（對齊格線），卡片放在裡面置中 */
@@ -116,18 +150,96 @@ body {
   justify-content: center;
 }
 
+/* === 單頁（第1面）四格 === */
+.album__book-bg[data-side="single"] .slot1 {
+  top: var(--S-s1-top);
+  left: var(--S-s1-left);
+  width: var(--S-s1-w);
+  height: var(--S-s1-h);
+}
+.album__book-bg[data-side="single"] .slot2 {
+  top: var(--S-s2-top);
+  left: var(--S-s2-left);
+  width: var(--S-s2-w);
+  height: var(--S-s2-h);
+}
+.album__book-bg[data-side="single"] .slot3 {
+  top: var(--S-s3-top);
+  left: var(--S-s3-left);
+  width: var(--S-s3-w);
+  height: var(--S-s3-h);
+}
+.album__book-bg[data-side="single"] .slot4 {
+  top: var(--S-s4-top);
+  left: var(--S-s4-left);
+  width: var(--S-s4-w);
+  height: var(--S-s4-h);
+}
+
+/* === 左頁四格（第2面起）=== */
+.album__book-bg[data-side="left"] .slot1 {
+  top: var(--L-s1-top);
+  left: var(--L-s1-left);
+  width: var(--L-s1-w);
+  height: var(--L-s1-h);
+}
+.album__book-bg[data-side="left"] .slot2 {
+  top: var(--L-s2-top);
+  left: var(--L-s2-left);
+  width: var(--L-s2-w);
+  height: var(--L-s2-h);
+}
+.album__book-bg[data-side="left"] .slot3 {
+  top: var(--L-s3-top);
+  left: var(--L-s3-left);
+  width: var(--L-s3-w);
+  height: var(--L-s3-h);
+}
+.album__book-bg[data-side="left"] .slot4 {
+  top: var(--L-s4-top);
+  left: var(--L-s4-left);
+  width: var(--L-s4-w);
+  height: var(--L-s4-h);
+}
+
+/* === 右頁四格（第2面起）=== */
+.album__book-bg[data-side="right"] .slot1 {
+  top: var(--R-s1-top);
+  left: var(--R-s1-left);
+  width: var(--R-s1-w);
+  height: var(--R-s1-h);
+}
+.album__book-bg[data-side="right"] .slot2 {
+  top: var(--R-s2-top);
+  left: var(--R-s2-left);
+  width: var(--R-s2-w);
+  height: var(--R-s2-h);
+}
+.album__book-bg[data-side="right"] .slot3 {
+  top: var(--R-s3-top);
+  left: var(--R-s3-left);
+  width: var(--R-s3-w);
+  height: var(--R-s3-h);
+}
+.album__book-bg[data-side="right"] .slot4 {
+  top: var(--R-s4-top);
+  left: var(--R-s4-left);
+  width: var(--R-s4-w);
+  height: var(--R-s4-h);
+}
+
 /* 卡片本體：固定直式 2:3 比例 */
 .card {
-  aspect-ratio: 2 / 3; /* 關鍵！強制直式比例 */
-  height: 100%; /* 讓它在 slot 的高度範圍內放大到頂 */
-   /*max-width: 100%; 防止超出 slot 寬度 */
+  position: relative; /* 讓標籤依附卡片 */
+  aspect-ratio: 2 / 3;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .card__img {
-  aspect-ratio: 2 / 3; /* 強制直式比例 */
+  aspect-ratio: 2 / 3;
   width: auto;
   height: 100%;
   background: #fafafa;
@@ -137,12 +249,41 @@ body {
 }
 
 .card__img img {
-  aspect-ratio: 2 / 3; /* 關鍵！強制直式比例 */
+  aspect-ratio: 2 / 3;
   width: auto;
   height: 100%;
-  object-fit: cover; /* 保留 2:3 原圖完整顯示，不裁切 */
+  -o-object-fit: cover;
+     object-fit: cover;
 }
 
+/* 名稱標籤（貼紙效果） */
+.card__label {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  max-width: 90%;
+  padding: 4px 8px;
+  font-size: 12px;
+  line-height: 1.2;
+  color: #222;
+  background: #fffdf5;
+  border: 1px solid #e0d9b8;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* hover 時顯示完整 */
+.card__label:hover {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  background: #fffbe8;
+  z-index: 10;
+}
 /* 校正模式 */
 .album__book-bg.debug .slot::after {
   content: "";
@@ -151,4 +292,25 @@ body {
   border: 2px dashed #e53935;
   border-radius: 8px;
   pointer-events: none;
+}
+.spinner {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #555;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  -webkit-animation: spin 1s linear infinite;
+          animation: spin 1s linear infinite;
+  margin: 60px auto;
+  display: none; /* 預設隱藏 */
+}
+
+@-webkit-keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
