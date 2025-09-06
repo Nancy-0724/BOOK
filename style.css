@@ -314,3 +314,47 @@ body {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+
+/* 手機優化：左右頁改為上下堆疊，每頁滿版 */
+@media (max-width: 768px) {
+  .album {
+    width: 100%;
+  }
+
+  .album__spread {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .album__book-bg {
+    max-width: 100%;
+  }
+
+  /* 手機上左右頁的背景圖置中即可（不要強制靠邊） */
+  .album__book-bg[data-side="left"],
+  .album__book-bg[data-side="right"] {
+    background-position: center center;
+  }
+
+  /* 底部控制列貼底＋半透明，方便翻頁 */
+  .album__footer {
+    position: sticky;
+    bottom: 0;
+    background: rgba(255,255,255,0.85);
+    backdrop-filter: blur(6px);
+    padding: 10px 8px;
+    z-index: 50;
+  }
+
+  /* 提升點擊區域 */
+  .album__controls button {
+    padding: 12px 14px;
+  }
+
+  /* 標籤略縮，避免遮擋 */
+  .card__label {
+    font-size: 11px;
+    top: -8px;
+  }
+}
